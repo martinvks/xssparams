@@ -6,34 +6,37 @@ import (
 )
 
 const (
-	MatchQuote       = "MATCH_QUOTE"
-	MatchDoubleQuote = "MATCH_DOUBLE_QUOTE"
-	MatchBracket     = "MATCH_BRACKET"
-	MatchHref        = "MATCH_HREF"
-	MatchOther       = "MATCH_OTHER"
-	MatchHeader      = "MATCH_HEADER"
+	SingleQuote = "SINGLE_QUOTE"
+	DoubleQuote = "DOUBLE_QUOTE"
+	Element     = "ELEMENT"
+	Href        = "HREF"
+	Unknown     = "UNKNOWN"
+	HEADER      = "HEADER"
 )
 
-type MatchCheck struct {
-	Char      string
-	Inputs    []string
+type EscapeCheck struct {
+	Checks    map[string]string
 	MatchFunc Matcher
 }
 
-var MatchChecks = map[string]MatchCheck{
-	MatchQuote: {
-		Char:      "'",
-		Inputs:    []string{"'", "%27"},
+var EscapeChecks = map[string]EscapeCheck{
+	SingleQuote: {
+		Checks: map[string]string{
+			`'`:  `'`,
+			`\'`: `\\'`,
+		},
 		MatchFunc: MatchQuoteEnclosed,
 	},
-	MatchDoubleQuote: {
-		Char:      "\"",
-		Inputs:    []string{"\"", "%22"},
+	DoubleQuote: {
+		Checks: map[string]string{
+			`"`: `"`,
+		},
 		MatchFunc: MatchDoubleQuoteEnclosed,
 	},
-	MatchBracket: {
-		Char:      "<",
-		Inputs:    []string{"<", "%3C"},
+	Element: {
+		Checks: map[string]string{
+			`<`: `<`,
+		},
 		MatchFunc: MatchBracketEnclosed,
 	},
 }
@@ -42,28 +45,28 @@ func FindMatchTypes(id string, body []byte, headers http.Header) map[string]stru
 	matchTypes := make(map[string]struct{})
 
 	if MatchQuoteEnclosed(id, body) {
-		matchTypes[MatchQuote] = struct{}{}
+		matchTypes[SingleQuote] = struct{}{}
 	}
 	if MatchDoubleQuoteEnclosed(id, body) {
-		matchTypes[MatchDoubleQuote] = struct{}{}
+		matchTypes[DoubleQuote] = struct{}{}
 	}
 	if MatchBracketEnclosed(id, body) {
-		matchTypes[MatchBracket] = struct{}{}
+		matchTypes[Element] = struct{}{}
 	}
 	if MatchHrefAttribute(id, body) {
-		matchTypes[MatchHref] = struct{}{}
+		matchTypes[Href] = struct{}{}
 	}
 
 	if len(matchTypes) == 0 {
 		if MatchAny(id, body) {
-			matchTypes[MatchOther] = struct{}{}
+			matchTypes[Unknown] = struct{}{}
 		}
 	}
 
 	for _, headerValues := range headers {
 		for _, headerValue := range headerValues {
 			if strings.Contains(headerValue, id) {
-				matchTypes[MatchHeader] = struct{}{}
+				matchTypes[HEADER] = struct{}{}
 			}
 		}
 	}

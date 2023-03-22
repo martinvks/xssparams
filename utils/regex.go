@@ -4,17 +4,6 @@ import "regexp"
 
 type Matcher func(string, []byte) bool
 
-func FindPathParams(path string) []string {
-	matcher := regexp.MustCompile(`/(\d+)(/|$)`)
-
-	var results []string
-	for _, match := range matcher.FindAllStringSubmatch(path, -1) {
-		results = append(results, match[1])
-	}
-
-	return results
-}
-
 func MatchAny(value string, body []byte) bool {
 	escaped := regexp.QuoteMeta(value)
 	matcher := regexp.MustCompile(escaped)
