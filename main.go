@@ -19,7 +19,12 @@ func main() {
 	}
 
 	re := func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
+		differentHost := req.URL.Host != via[0].URL.Host
+
+		if differentHost || len(via) >= 5 {
+			return http.ErrUseLastResponse
+		}
+		return nil
 	}
 
 	client := &http.Client{
