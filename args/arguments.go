@@ -10,6 +10,7 @@ import (
 
 type Arguments struct {
 	Debug   bool
+	CheckOk bool
 	Headers map[string]string
 	Urls    []string
 }
@@ -27,14 +28,30 @@ func (i *headersFlag) Set(value string) error {
 
 var (
 	debug        bool
+	checkOk      bool
 	headersSlice headersFlag
 	headersMap   = make(map[string]string)
 	urls         []string
 )
 
 func Parse() (Arguments, error) {
-	flag.BoolVar(&debug, "debug", false, "log request urls and status codes")
-	flag.Var(&headersSlice, "H", "header fields added to each request. syntax similar to curl: -H \"x-header: val\".")
+	flag.BoolVar(
+		&debug,
+		"debug",
+		false,
+		"log request urls and status codes",
+	)
+	flag.BoolVar(
+		&checkOk,
+		"check-ok",
+		false,
+		"only scan urls that initially return a 200 OK response",
+	)
+	flag.Var(
+		&headersSlice,
+		"H",
+		"header fields added to each request. syntax similar to curl: -H \"x-header: val\".",
+	)
 	flag.Parse()
 
 	for _, header := range headersSlice {
@@ -59,6 +76,7 @@ func Parse() (Arguments, error) {
 
 	return Arguments{
 		Debug:   debug,
+		CheckOk: checkOk,
 		Headers: headersMap,
 		Urls:    urls,
 	}, nil

@@ -47,6 +47,13 @@ func main() {
 			fmt.Println(target.String())
 		}
 
+		if arguments.CheckOk {
+			resp, err := utils.DoRequest(client, target.String(), arguments)
+			if err != nil || resp.Status != 200 {
+				continue
+			}
+		}
+
 		results := scanner.ScanParams(client, target, params, arguments)
 		if len(results) > 0 {
 			fmt.Printf("%s: %v\n", target, results)
