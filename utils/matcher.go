@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	SingleQuote = "SINGLE_QUOTE"
-	DoubleQuote = "DOUBLE_QUOTE"
-	Element     = "ELEMENT"
-	Href        = "HREF"
-	Unknown     = "UNKNOWN"
-	HEADER      = "HEADER"
+	SingleQuote = "SingleQuote"
+	DoubleQuote = "DoubleQuote"
+	Element     = "Element"
+	Href        = "Href"
+	Unknown     = "Unknown"
+	Header      = "Header"
 )
 
 type EscapeCheck struct {
@@ -66,7 +66,7 @@ func FindMatchTypes(id string, body []byte, headers http.Header) map[string]stru
 	for _, headerValues := range headers {
 		for _, headerValue := range headerValues {
 			if strings.Contains(headerValue, id) {
-				matchTypes[HEADER] = struct{}{}
+				matchTypes[Header] = struct{}{}
 			}
 		}
 	}

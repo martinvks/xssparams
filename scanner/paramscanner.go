@@ -10,52 +10,60 @@ import (
 	"github.com/martinvks/xss-scanner/utils"
 )
 
+type ParamResult struct {
+	param  string
+	result []string
+}
+
 func ScanParams(client *http.Client, target *url.URL, params []utils.Param, arguments args.Arguments) []ParamResult {
 	var results []ParamResult
 
 	for _, param := range params {
-		id := utils.MiniUuid()
-
-		resp, err := utils.DoRequest(client, getTargetUrl(target, param, id), arguments)
-		if err != nil {
+		paramResult, err := scanParam(client, target, param, arguments)
+		if err != nil || len(paramResult) < 1 {
 			continue
 		}
 
-		matchTypes := utils.FindMatchTypes(id, resp.Body, resp.Headers)
-		if len(matchTypes) == 0 {
+		results = append(results, ParamResult{
+			param:  param.ParamKey,
+			result: paramResult,
+		})
+	}
+	return results
+}
+
+func scanParam(client *http.Client, target *url.URL, param utils.Param, arguments args.Arguments) ([]string, error) {
+	id := utils.MiniUuid()
+
+	resp, err := utils.DoRequest(client, getTargetUrl(target, param, id), arguments)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []string
+	matchTypes := utils.FindMatchTypes(id, resp.Body, resp.Headers)
+
+	for matchType := range matchTypes {
+		escapeCheck, ok := utils.EscapeChecks[matchType]
+		if !ok {
+			results = append(results, matchType)
 			continue
 		}
 
-		var paramResults = make(map[string]struct{})
-
-		for matchType := range matchTypes {
-			escapeCheck, ok := utils.EscapeChecks[matchType]
-			if !ok {
-				paramResults[matchType] = struct{}{}
+		for input, match := range escapeCheck.Checks {
+			resp, err := utils.DoRequest(client, getTargetUrl(target, param, id+input), arguments)
+			if err != nil {
 				continue
 			}
 
-			for input, match := range escapeCheck.Checks {
-				resp, err := utils.DoRequest(client, getTargetUrl(target, param, id+input), arguments)
-				if err != nil {
-					continue
-				}
-
-				if escapeCheck.MatchFunc(id+match, resp.Body) {
-					paramResults[matchType] = struct{}{}
-				}
+			if escapeCheck.MatchFunc(id+match, resp.Body) {
+				results = append(results, matchType)
+				break
 			}
 		}
-
-		if len(paramResults) > 0 {
-			results = append(results, ParamResult{
-				param:  param.ParamKey,
-				result: paramResults,
-			})
-		}
-
 	}
-	return results
+
+	return results, nil
 }
 
 func getTargetUrl(target *url.URL, param utils.Param, newValue string) string {
