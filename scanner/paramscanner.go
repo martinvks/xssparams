@@ -41,7 +41,7 @@ func scanParam(client *http.Client, target *url.URL, param utils.Param, argument
 	}
 
 	var results []string
-	matchTypes := utils.FindMatchTypes(id, resp.Body, resp.Headers)
+	matchTypes := utils.FindMatchTypes(id, resp.Body)
 
 	for matchType := range matchTypes {
 		escapeCheck, ok := utils.EscapeChecks[matchType]

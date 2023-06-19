@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/martinvks/xss-scanner/args"
 	"github.com/martinvks/xss-scanner/scanner"
@@ -47,9 +48,14 @@ func main() {
 			fmt.Println(target.String())
 		}
 
-		if arguments.CheckOk {
+		if arguments.OnlyHtml {
 			resp, err := utils.DoRequest(client, target.String(), arguments)
-			if err != nil || resp.Status != 200 {
+			if err != nil {
+				continue
+			}
+
+			contentType := resp.Headers.Get("content-type")
+			if !strings.Contains(contentType, "html") && contentType != "" {
 				continue
 			}
 		}

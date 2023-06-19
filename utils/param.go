@@ -17,13 +17,15 @@ type Param struct {
 	Index     int
 }
 
+var regexNumeric = regexp.MustCompile(`^\d+$`)
+var regexUuid = regexp.MustCompile(`^(?i)[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$`)
+
 func GetParams(target *url.URL) []Param {
 	var params []Param
 
-	re := regexp.MustCompile(`^\d+$`)
 	segments := strings.Split(target.Path, "/")
 	for index, segment := range segments {
-		if re.MatchString(segment) {
+		if regexNumeric.MatchString(segment) || regexUuid.MatchString(segment) {
 			params = append(params, Param{
 				ParamType: PathParam,
 				ParamKey:  segment,

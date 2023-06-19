@@ -9,10 +9,10 @@ import (
 )
 
 type Arguments struct {
-	Debug   bool
-	CheckOk bool
-	Headers map[string]string
-	Urls    []string
+	Debug    bool
+	OnlyHtml bool
+	Headers  map[string]string
+	Urls     []string
 }
 
 type headersFlag []string
@@ -28,7 +28,7 @@ func (i *headersFlag) Set(value string) error {
 
 var (
 	debug        bool
-	checkOk      bool
+	onlyHtml     bool
 	headersSlice headersFlag
 	headersMap   = make(map[string]string)
 	urls         []string
@@ -39,13 +39,13 @@ func Parse() (Arguments, error) {
 		&debug,
 		"debug",
 		false,
-		"log request urls and status codes",
+		"print request urls and status codes",
 	)
 	flag.BoolVar(
-		&checkOk,
-		"check-ok",
-		false,
-		"only scan urls that initially return a 200 OK response",
+		&onlyHtml,
+		"only-html",
+		true,
+		"only scan urls where the content-type response header field is either empty or contains \"html\"",
 	)
 	flag.Var(
 		&headersSlice,
@@ -75,9 +75,9 @@ func Parse() (Arguments, error) {
 	}
 
 	return Arguments{
-		Debug:   debug,
-		CheckOk: checkOk,
-		Headers: headersMap,
-		Urls:    urls,
+		Debug:    debug,
+		OnlyHtml: onlyHtml,
+		Headers:  headersMap,
+		Urls:     urls,
 	}, nil
 }

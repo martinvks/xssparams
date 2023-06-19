@@ -10,7 +10,7 @@ import (
 
 type Response struct {
 	Status  int
-	Headers map[string][]string
+	Headers http.Header
 	Body    []byte
 }
 

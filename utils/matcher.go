@@ -1,17 +1,11 @@
 package utils
 
-import (
-	"net/http"
-	"strings"
-)
-
 const (
 	SingleQuote = "SingleQuote"
 	DoubleQuote = "DoubleQuote"
 	Element     = "Element"
 	Href        = "Href"
 	Unknown     = "Unknown"
-	Header      = "Header"
 )
 
 type EscapeCheck struct {
@@ -41,7 +35,7 @@ var EscapeChecks = map[string]EscapeCheck{
 	},
 }
 
-func FindMatchTypes(id string, body []byte, headers http.Header) map[string]struct{} {
+func FindMatchTypes(id string, body []byte) map[string]struct{} {
 	matchTypes := make(map[string]struct{})
 
 	if MatchQuoteEnclosed(id, body) {
@@ -63,12 +57,5 @@ func FindMatchTypes(id string, body []byte, headers http.Header) map[string]stru
 		}
 	}
 
-	for _, headerValues := range headers {
-		for _, headerValue := range headerValues {
-			if strings.Contains(headerValue, id) {
-				matchTypes[Header] = struct{}{}
-			}
-		}
-	}
 	return matchTypes
 }
