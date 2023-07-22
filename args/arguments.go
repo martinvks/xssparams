@@ -10,6 +10,7 @@ import (
 
 type Arguments struct {
 	Debug    bool
+	Only200  bool
 	OnlyHtml bool
 	Headers  map[string]string
 	Urls     []string
@@ -28,6 +29,7 @@ func (i *headersFlag) Set(value string) error {
 
 var (
 	debug        bool
+	only200      bool
 	onlyHtml     bool
 	headersSlice headersFlag
 	headersMap   = make(map[string]string)
@@ -46,6 +48,12 @@ func Parse() (Arguments, error) {
 		"only-html",
 		true,
 		"only scan urls where the content-type response header field is either empty or contains \"html\"",
+	)
+	flag.BoolVar(
+		&only200,
+		"only-200",
+		false,
+		"only scan urls that initially returns a 200 status code",
 	)
 	flag.Var(
 		&headersSlice,
@@ -76,6 +84,7 @@ func Parse() (Arguments, error) {
 
 	return Arguments{
 		Debug:    debug,
+		Only200:  only200,
 		OnlyHtml: onlyHtml,
 		Headers:  headersMap,
 		Urls:     urls,

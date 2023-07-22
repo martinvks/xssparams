@@ -48,15 +48,23 @@ func main() {
 			fmt.Println(target.String())
 		}
 
-		if arguments.OnlyHtml {
+		if arguments.OnlyHtml || arguments.Only200 {
 			resp, err := utils.DoRequest(client, target.String(), arguments)
 			if err != nil {
 				continue
 			}
 
-			contentType := resp.Headers.Get("content-type")
-			if !strings.Contains(contentType, "html") && contentType != "" {
-				continue
+			if arguments.OnlyHtml {
+				contentType := resp.Headers.Get("content-type")
+				if !strings.Contains(contentType, "html") && contentType != "" {
+					continue
+				}
+			}
+
+			if arguments.Only200 {
+				if resp.Status != 200 {
+					continue
+				}
 			}
 		}
 
