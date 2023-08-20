@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/martinvks/xss-scanner/args"
@@ -25,14 +26,20 @@ func TestParamScanner(t *testing.T) {
 			name:     "escaped value reflected inside HTML element",
 			expected: nil,
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><p>Search value: %s</p></body></html>", html.EscapeString(s))
+				return fmt.Sprintf(
+					"<html><body><p>Search value: %s</p></body></html>",
+					html.EscapeString(s),
+				)
 			},
 		},
 		{
 			name:     "escaped value reflected inside HTML attribute",
 			expected: nil,
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><input type=\"text\" value=\"%s\"></body></html>", html.EscapeString(s))
+				return fmt.Sprintf(
+					"<html><body><input type=\"text\" value=\"%s\"></body></html>",
+					html.EscapeString(s),
+				)
 			},
 		},
 		{
@@ -42,7 +49,10 @@ func TestParamScanner(t *testing.T) {
 				[]string{"Element"},
 			}},
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><p>Search value: %s</p></body></html>", s)
+				return fmt.Sprintf(
+					"<html><body><p>Search value: %s</p></body></html>",
+					s,
+				)
 			},
 		},
 		{
@@ -52,7 +62,10 @@ func TestParamScanner(t *testing.T) {
 				[]string{"DoubleQuote"},
 			}},
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><input type=\"text\" value=\"%s\"></body></html>", s)
+				return fmt.Sprintf(
+					"<html><body><input type=\"text\" value=\"%s\"></body></html>",
+					s,
+				)
 			},
 		},
 		{
@@ -62,7 +75,23 @@ func TestParamScanner(t *testing.T) {
 				[]string{"SingleQuote"}},
 			},
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><input type='text' value='%s'></body></html>", s)
+				return fmt.Sprintf(
+					"<html><body><input type='text' value='%s'></body></html>",
+					s,
+				)
+			},
+		},
+		{
+			name: "value reflected inside script tag",
+			expected: []ParamResult{{
+				"q",
+				[]string{"Script"}},
+			},
+			responseDataWriter: func(s string) string {
+				return fmt.Sprintf(
+					"<html><body><script type=\"application/ld+json\">{\"query\": \"%s\"}</script></body></html>",
+					strings.ReplaceAll(s, `"`, `\"`),
+				)
 			},
 		},
 		{
@@ -72,7 +101,10 @@ func TestParamScanner(t *testing.T) {
 				[]string{"Href"}},
 			},
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><a href=\"%s\">Click me</a></body></html>", html.EscapeString(s))
+				return fmt.Sprintf(
+					"<html><body><a href=\"%s\">Click me</a></body></html>",
+					html.EscapeString(s),
+				)
 			},
 		},
 		{
@@ -82,7 +114,10 @@ func TestParamScanner(t *testing.T) {
 				[]string{"DoubleQuote", "Element"}},
 			},
 			responseDataWriter: func(s string) string {
-				return fmt.Sprintf("<html><body><input type=\"text\" value=\"%[1]s\"><p>Search value: %[1]s</p></body></html>", s)
+				return fmt.Sprintf(
+					"<html><body><input type=\"text\" value=\"%[1]s\"><p>Search value: %[1]s</p></body></html>",
+					s,
+				)
 			},
 		},
 	}

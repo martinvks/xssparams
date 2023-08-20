@@ -10,21 +10,27 @@ func MatchAny(value string, body []byte) bool {
 	return matcher.Match(body)
 }
 
-func MatchQuoteEnclosed(value string, body []byte) bool {
+func MatchSingleQuoteContext(value string, body []byte) bool {
 	escaped := regexp.QuoteMeta(value)
 	matcher := regexp.MustCompile(`'[^<>'"]*` + escaped + `[^<>'"]*'`)
 	return matcher.Match(body)
 }
 
-func MatchDoubleQuoteEnclosed(value string, body []byte) bool {
+func MatchDoubleQuoteContext(value string, body []byte) bool {
 	escaped := regexp.QuoteMeta(value)
 	matcher := regexp.MustCompile(`"[^<>'"]*` + escaped + `[^<>'"]*"`)
 	return matcher.Match(body)
 }
 
-func MatchBracketEnclosed(value string, body []byte) bool {
+func MatchElementContext(value string, body []byte) bool {
 	escaped := regexp.QuoteMeta(value)
 	matcher := regexp.MustCompile(`>[^<>'"]*` + escaped + `[^"<>]*<`)
+	return matcher.Match(body)
+}
+
+func MatchScriptContext(value string, body []byte) bool {
+	escaped := regexp.QuoteMeta(value)
+	matcher := regexp.MustCompile(`<script[^>]*>([^<]|<[^/])*` + escaped + `([^<]|<[^/])*</script`)
 	return matcher.Match(body)
 }
 

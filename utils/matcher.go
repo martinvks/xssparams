@@ -4,6 +4,7 @@ const (
 	SingleQuote = "SingleQuote"
 	DoubleQuote = "DoubleQuote"
 	Element     = "Element"
+	Script      = "Script"
 	Href        = "Href"
 	Unknown     = "Unknown"
 )
@@ -19,33 +20,42 @@ var EscapeChecks = map[string]EscapeCheck{
 			`'`:  `'`,
 			`\'`: `\\'`,
 		},
-		MatchFunc: MatchQuoteEnclosed,
+		MatchFunc: MatchSingleQuoteContext,
 	},
 	DoubleQuote: {
 		Checks: map[string]string{
 			`"`: `"`,
 		},
-		MatchFunc: MatchDoubleQuoteEnclosed,
+		MatchFunc: MatchDoubleQuoteContext,
 	},
 	Element: {
 		Checks: map[string]string{
 			`<`: `<`,
 		},
-		MatchFunc: MatchBracketEnclosed,
+		MatchFunc: MatchElementContext,
+	},
+	Script: {
+		Checks: map[string]string{
+			`</`: `</`,
+		},
+		MatchFunc: MatchScriptContext,
 	},
 }
 
 func FindMatchTypes(id string, body []byte) map[string]struct{} {
 	matchTypes := make(map[string]struct{})
 
-	if MatchQuoteEnclosed(id, body) {
+	if MatchSingleQuoteContext(id, body) {
 		matchTypes[SingleQuote] = struct{}{}
 	}
-	if MatchDoubleQuoteEnclosed(id, body) {
+	if MatchDoubleQuoteContext(id, body) {
 		matchTypes[DoubleQuote] = struct{}{}
 	}
-	if MatchBracketEnclosed(id, body) {
+	if MatchElementContext(id, body) {
 		matchTypes[Element] = struct{}{}
+	}
+	if MatchScriptContext(id, body) {
+		matchTypes[Script] = struct{}{}
 	}
 	if MatchHrefAttribute(id, body) {
 		matchTypes[Href] = struct{}{}

@@ -7,12 +7,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/martinvks/xss-scanner/args"
 	"github.com/martinvks/xss-scanner/scanner"
 	"github.com/martinvks/xss-scanner/utils"
 )
 
 func main() {
+	magenta := color.New(color.FgMagenta).SprintFunc()
+
 	arguments, err := args.Parse()
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -70,7 +73,7 @@ func main() {
 
 		results := scanner.ScanParams(client, target, params, arguments)
 		if len(results) > 0 {
-			fmt.Printf("%s: %v\n", target, results)
+			fmt.Printf("%s: %v\n", target, magenta(results))
 		}
 	}
 }
