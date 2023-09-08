@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"strings"
 	"testing"
 
-	"github.com/martinvks/xss-scanner/args"
 	"github.com/martinvks/xss-scanner/utils"
-	"golang.org/x/exp/slices"
 )
 
 type testCase struct {
@@ -137,7 +136,7 @@ func TestParamScanner(t *testing.T) {
 				ParamType: utils.QueryParam,
 			}}
 
-			paramResults := ScanParams(&http.Client{}, target, params, args.Arguments{})
+			paramResults := scanParams(utils.NewClient(nil, 100, false), target, params)
 
 			if len(paramResults) != len(tc.expected) {
 				t.Errorf("len(paramResults) = %d; want %d", len(paramResults), len(tc.expected))

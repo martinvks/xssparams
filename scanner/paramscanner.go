@@ -2,11 +2,9 @@ package scanner
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/martinvks/xss-scanner/args"
 	"github.com/martinvks/xss-scanner/utils"
 )
 
@@ -15,11 +13,11 @@ type ParamResult struct {
 	result []string
 }
 
-func ScanParams(client *http.Client, target *url.URL, params []utils.Param, arguments args.Arguments) []ParamResult {
+func scanParams(client *utils.RateLimitClient, target *url.URL, params []utils.Param) []ParamResult {
 	var results []ParamResult
 
 	for _, param := range params {
-		paramResult, err := scanParam(client, target, param, arguments)
+		paramResult, err := scanParam(client, target, param)
 		if err != nil || len(paramResult) < 1 {
 			continue
 		}
@@ -32,10 +30,10 @@ func ScanParams(client *http.Client, target *url.URL, params []utils.Param, argu
 	return results
 }
 
-func scanParam(client *http.Client, target *url.URL, param utils.Param, arguments args.Arguments) ([]string, error) {
+func scanParam(client *utils.RateLimitClient, target *url.URL, param utils.Param) ([]string, error) {
 	id := utils.MiniUuid()
 
-	resp, err := utils.DoRequest(client, getTargetUrl(target, param, id), arguments)
+	resp, err := client.Get(getTargetUrl(target, param, id))
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +49,7 @@ func scanParam(client *http.Client, target *url.URL, param utils.Param, argument
 		}
 
 		for input, match := range escapeCheck.Checks {
-			resp, err := utils.DoRequest(client, getTargetUrl(target, param, id+input), arguments)
+			resp, err := client.Get(getTargetUrl(target, param, id+input))
 			if err != nil {
 				continue
 			}

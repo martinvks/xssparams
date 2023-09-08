@@ -2,9 +2,8 @@ package utils
 
 import (
 	"net/url"
+	"slices"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
 
 type testCase struct {

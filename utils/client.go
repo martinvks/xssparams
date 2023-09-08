@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
-	"github.com/martinvks/xss-scanner/args"
+	"github.com/fatih/color"
+	"golang.org/x/time/rate"
 )
 
 type Response struct {
@@ -14,13 +16,45 @@ type Response struct {
 	Body    []byte
 }
 
-func DoRequest(client *http.Client, url string, arguments args.Arguments) (*Response, error) {
-	req, err := getRequest(url, arguments.Headers)
+type RateLimitClient struct {
+	verbose bool
+	headers map[string]string
+	client  *http.Client
+	limiter *rate.Limiter
+}
+
+func NewClient(headers map[string]string, rateLimit int, verbose bool) *RateLimitClient {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	limiter := rate.NewLimiter(
+		rate.Every(time.Second/time.Duration(rateLimit)),
+		1,
+	)
+
+	return &RateLimitClient{
+		verbose,
+		headers,
+		client,
+		limiter,
+	}
+}
+
+func (c *RateLimitClient) Get(url string) (*Response, error) {
+	req, err := newGetRequest(url, c.headers)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.Do(req)
+	err = c.limiter.Wait(req.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +68,8 @@ func DoRequest(client *http.Client, url string, arguments args.Arguments) (*Resp
 		return nil, err
 	}
 
-	if arguments.Debug {
-		fmt.Printf("%s: %d\n", req.URL, resp.StatusCode)
+	if c.verbose {
+		fmt.Printf("%s [%s]\n", req.URL, colorizedStatus(resp.StatusCode))
 	}
 
 	return &Response{
@@ -45,7 +79,7 @@ func DoRequest(client *http.Client, url string, arguments args.Arguments) (*Resp
 	}, nil
 }
 
-func getRequest(url string, headers map[string]string) (*http.Request, error) {
+func newGetRequest(url string, headers map[string]string) (*http.Request, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -58,4 +92,15 @@ func getRequest(url string, headers map[string]string) (*http.Request, error) {
 	req.Close = true
 
 	return req, nil
+}
+
+func colorizedStatus(statusCode int) string {
+	switch {
+	case statusCode >= 400:
+		return color.RedString("%d", statusCode)
+	case statusCode >= 300:
+		return color.YellowString("%d", statusCode)
+	default:
+		return color.GreenString("%d", statusCode)
+	}
 }
