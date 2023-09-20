@@ -1,4 +1,4 @@
-module github.com/martinvks/xss-scanner
+module github.com/martinvks/xssparams
 
 go 1.21
 

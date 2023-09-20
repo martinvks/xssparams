@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/martinvks/xss-scanner/utils"
+	"github.com/martinvks/xssparams/utils"
 )
 
 type ParamResult struct {

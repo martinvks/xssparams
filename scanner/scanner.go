@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/martinvks/xss-scanner/utils"
+	"github.com/martinvks/xssparams/utils"
 )
 
 func Scan(client *utils.RateLimitClient, targetUrl string, filterCodes []int) []ParamResult {

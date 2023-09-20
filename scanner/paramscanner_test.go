@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/martinvks/xss-scanner/utils"
+	"github.com/martinvks/xssparams/utils"
 )
 
 type testCase struct {

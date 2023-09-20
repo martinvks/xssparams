@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/martinvks/xss-scanner/args"
-	"github.com/martinvks/xss-scanner/scanner"
-	"github.com/martinvks/xss-scanner/utils"
+	"github.com/martinvks/xssparams/args"
+	"github.com/martinvks/xssparams/scanner"
+	"github.com/martinvks/xssparams/utils"
 )
 
 func main() {
