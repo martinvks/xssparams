@@ -23,8 +23,9 @@ type RateLimitClient struct {
 	limiter *rate.Limiter
 }
 
-func NewClient(headers map[string]string, rateLimit int, verbose bool) *RateLimitClient {
+func NewClient(headers map[string]string, rateLimit int, timeout int, verbose bool) *RateLimitClient {
 	client := &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

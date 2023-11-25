@@ -9,7 +9,12 @@ import (
 	"github.com/martinvks/xssparams/utils"
 )
 
-func Scan(client *utils.RateLimitClient, targetUrl string, filterCodes []int) []ParamResult {
+type URLResult struct {
+	URL           string
+	ParamsResults []ParamResult
+}
+
+func Scan(client *utils.RateLimitClient, targetUrl string, filterCodes []int) *URLResult {
 	target, err := url.Parse(targetUrl)
 	if err != nil {
 		return nil
@@ -40,5 +45,13 @@ func Scan(client *utils.RateLimitClient, targetUrl string, filterCodes []int) []
 		}
 	}
 
-	return scanParams(client, target, params)
+	result := scanParams(client, target, params)
+	if len(result) == 0 {
+		return nil
+	}
+
+	return &URLResult{
+		URL:           targetUrl,
+		ParamsResults: result,
+	}
 }

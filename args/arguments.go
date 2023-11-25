@@ -14,6 +14,7 @@ var validStatusCode = regexp.MustCompile(`^[1-5]\d{2}$`)
 
 type Arguments struct {
 	Threads     int
+	Timeout     int
 	RateLimit   int
 	Verbose     bool
 	Headers     map[string]string
@@ -65,6 +66,7 @@ func (i *filterCodesFlag) Set(value string) error {
 
 var (
 	threads      int
+	timeout      int
 	rateLimit    int
 	verbose      bool
 	filterCodes  filterCodesFlag
@@ -79,6 +81,12 @@ func Parse() (Arguments, error) {
 		"number of lightweight threads to use",
 	)
 	flag.IntVar(
+		&timeout,
+		"timeout",
+		10,
+		"request timeout in seconds",
+	)
+	flag.IntVar(
 		&rateLimit,
 		"rate-limit",
 		50,
@@ -88,7 +96,7 @@ func Parse() (Arguments, error) {
 		&verbose,
 		"verbose",
 		false,
-		"print request urls and status codes",
+		"print request urls and response status codes",
 	)
 	flag.Var(
 		&filterCodes,
@@ -131,6 +139,7 @@ func Parse() (Arguments, error) {
 
 	return Arguments{
 		Threads:     threads,
+		Timeout:     timeout,
 		RateLimit:   rateLimit,
 		Verbose:     verbose,
 		Headers:     headers,

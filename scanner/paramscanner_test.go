@@ -136,7 +136,7 @@ func TestParamScanner(t *testing.T) {
 				ParamType: utils.QueryParam,
 			}}
 
-			paramResults := scanParams(utils.NewClient(nil, 100, false), target, params)
+			paramResults := scanParams(utils.NewClient(nil, 100, 5, false), target, params)
 
 			if len(paramResults) != len(tc.expected) {
 				t.Errorf("len(paramResults) = %d; want %d", len(paramResults), len(tc.expected))

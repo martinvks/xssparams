@@ -21,11 +21,13 @@ func main() {
 	client := utils.NewClient(
 		arguments.Headers,
 		arguments.RateLimit,
+		arguments.Timeout,
 		arguments.Verbose,
 	)
 
 	scanWG := sync.WaitGroup{}
 	scanChan := make(chan string)
+	var results []*scanner.URLResult
 
 	for i := 0; i < arguments.Threads; i++ {
 		scanWG.Add(1)
@@ -35,8 +37,9 @@ func main() {
 			for url := range scanChan {
 				result := scanner.Scan(client, url, arguments.FilterCodes)
 
-				if result != nil && len(result) > 0 {
-					fmt.Printf("%s %s\n", url, color.MagentaString("%v", result))
+				if result != nil {
+					printURLResult(result)
+					results = append(results, result)
 				}
 			}
 		}()
@@ -46,6 +49,29 @@ func main() {
 		scanChan <- url
 	}
 	close(scanChan)
-
 	scanWG.Wait()
+
+	if arguments.Verbose {
+		printSummary(results)
+	}
+}
+
+func printSummary(results []*scanner.URLResult) {
+	fmt.Println()
+	if len(results) == 0 {
+		fmt.Println("Scan completed without any findings.")
+		return
+	}
+	fmt.Printf("Found %d URLs potentially vulnerable to xss:\n", len(results))
+	for _, result := range results {
+		printURLResult(result)
+	}
+}
+
+func printURLResult(result *scanner.URLResult) {
+	fmt.Printf(
+		"%s %s\n",
+		result.URL,
+		color.MagentaString("%v", result.ParamsResults),
+	)
 }

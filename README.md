@@ -1,7 +1,7 @@
 <h1 align="center">xssparams</h1>
 <br>
 
-`xssparams` takes a list of urls and checks parameters for reflected xss
+`xssparams` takes a list of urls and identifies parameters potentially vulnerable to reflected xss
 
 ## Installation
 
