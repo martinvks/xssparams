@@ -13,13 +13,14 @@ import (
 var validStatusCode = regexp.MustCompile(`^[1-5]\d{2}$`)
 
 type Arguments struct {
-	Threads     int
-	Timeout     int
-	RateLimit   int
-	Verbose     bool
-	Headers     map[string]string
-	FilterCodes []int
-	Urls        []string
+	Threads      int
+	Timeout      int
+	RateLimit    int
+	CircuitBreak int
+	Verbose      bool
+	Headers      map[string]string
+	FilterCodes  []int
+	Urls         []string
 }
 
 type headersFlag []string
@@ -68,6 +69,7 @@ var (
 	threads      int
 	timeout      int
 	rateLimit    int
+	circuitBreak int
 	verbose      bool
 	filterCodes  filterCodesFlag
 	headersSlice headersFlag
@@ -91,6 +93,12 @@ func Parse() (Arguments, error) {
 		"rate-limit",
 		50,
 		"maximum requests to send per second",
+	)
+	flag.IntVar(
+		&circuitBreak,
+		"circuit-break",
+		0,
+		"stop scanner after N consecutive 4xx/5xx responses (0 = disabled)",
 	)
 	flag.BoolVar(
 		&verbose,
@@ -138,12 +146,13 @@ func Parse() (Arguments, error) {
 	}
 
 	return Arguments{
-		Threads:     threads,
-		Timeout:     timeout,
-		RateLimit:   rateLimit,
-		Verbose:     verbose,
-		Headers:     headers,
-		FilterCodes: filterCodes,
-		Urls:        urls,
+		Threads:      threads,
+		Timeout:      timeout,
+		RateLimit:    rateLimit,
+		CircuitBreak: circuitBreak,
+		Verbose:      verbose,
+		Headers:      headers,
+		FilterCodes:  filterCodes,
+		Urls:         urls,
 	}, nil
 }

@@ -43,3 +43,35 @@ https://example.com?referer=https://youtube.com [{referer [Href]}]
 - Query Parameters, e.g., `search` and `language` in `https://example.com?search=quantum+computing&language=en`
 - Numeric path segments, e.g., `123` in `https://example.com/articles/123`
 - UUID path segments, e.g., `a92d7004-d18e-4aa3-9309-c016b6abca23` in `https://example.com/articles/a92d7004-d18e-4aa3-9309-c016b6abca23`
+
+## Library Usage
+
+```go
+import (
+	"github.com/martinvks/xssparams/pkg"
+)
+
+func main() {
+	config := pkg.Config{
+		Threads:      10,
+		Timeout:      5,
+		RateLimit:    50,
+		CircuitBreak: 0,
+		Verbose:      false,
+		Headers:      map[string]string{"User-Agent": "custom-agent"},
+		FilterCodes:  []int{404, 500},
+	}
+
+	urls := []string{
+		"https://example.com?search=test",
+		"https://example.com/articles/123",
+	}
+
+	results := pkg.Run(config, urls)
+
+	for _, result := range results {
+		// result.URL - the scanned URL
+		// result.ParamsResults - slice of vulnerable parameters found
+	}
+}
+```

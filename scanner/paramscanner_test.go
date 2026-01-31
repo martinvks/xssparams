@@ -126,7 +126,7 @@ func TestParamScanner(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				searchParam := r.URL.Query().Get("q")
 				response := tc.responseDataWriter(searchParam)
-				_, _ = fmt.Fprintf(w, response)
+				_, _ = fmt.Fprint(w, response)
 			}))
 			defer ts.Close()
 
@@ -136,7 +136,7 @@ func TestParamScanner(t *testing.T) {
 				ParamType: utils.QueryParam,
 			}}
 
-			paramResults := scanParams(utils.NewClient(nil, 100, 5, false), target, params)
+			paramResults := scanParams(utils.NewClient(nil, 100, 5, 0, false), target, params)
 
 			if len(paramResults) != len(tc.expected) {
 				t.Errorf("len(paramResults) = %d; want %d", len(paramResults), len(tc.expected))

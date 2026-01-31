@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
 	"golang.org/x/time/rate"
 )
+
 
 type Response struct {
 	Status  int
@@ -17,13 +19,16 @@ type Response struct {
 }
 
 type RateLimitClient struct {
-	verbose bool
-	headers map[string]string
-	client  *http.Client
-	limiter *rate.Limiter
+	verbose           bool
+	headers           map[string]string
+	client            *http.Client
+	limiter           *rate.Limiter
+	circuitBreak      int
+	consecutiveErrors int
+	mu                sync.Mutex
 }
 
-func NewClient(headers map[string]string, rateLimit int, timeout int, verbose bool) *RateLimitClient {
+func NewClient(headers map[string]string, rateLimit int, timeout int, circuitBreak int, verbose bool) *RateLimitClient {
 	client := &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -37,11 +42,18 @@ func NewClient(headers map[string]string, rateLimit int, timeout int, verbose bo
 	)
 
 	return &RateLimitClient{
-		verbose,
-		headers,
-		client,
-		limiter,
+		verbose:      verbose,
+		headers:      headers,
+		client:       client,
+		limiter:      limiter,
+		circuitBreak: circuitBreak,
 	}
+}
+
+func (c *RateLimitClient) CircuitBroken() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.circuitBreak > 0 && c.consecutiveErrors >= c.circuitBreak
 }
 
 func (c *RateLimitClient) Get(url string) (*Response, error) {
@@ -67,6 +79,16 @@ func (c *RateLimitClient) Get(url string) (*Response, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.circuitBreak > 0 {
+		c.mu.Lock()
+		if resp.StatusCode >= 400 {
+			c.consecutiveErrors++
+		} else {
+			c.consecutiveErrors = 0
+		}
+		c.mu.Unlock()
 	}
 
 	if c.verbose {
