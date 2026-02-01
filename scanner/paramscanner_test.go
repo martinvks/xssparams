@@ -146,13 +146,13 @@ func TestParamScanner(t *testing.T) {
 				result := paramResults[index]
 				expected := tc.expected[index]
 
-				if result.param != expected.param {
-					t.Errorf("param name = \"%s\"; want \"%s\"", result.param, expected.param)
+				if result.Param != expected.Param {
+					t.Errorf("param name = \"%s\"; want \"%s\"", result.Param, expected.Param)
 
 				}
 
-				if !slices.Equal(result.result, expected.result) {
-					t.Errorf("param result = %s; want %s", result.result, expected.result)
+				if !slices.Equal(result.Result, expected.Result) {
+					t.Errorf("param result = %s; want %s", result.Result, expected.Result)
 				}
 			}
 		})

@@ -9,8 +9,8 @@ import (
 )
 
 type ParamResult struct {
-	param  string
-	result []string
+	Param  string
+	Result []string
 }
 
 func scanParams(client *utils.RateLimitClient, target *url.URL, params []utils.Param) []ParamResult {
@@ -23,8 +23,8 @@ func scanParams(client *utils.RateLimitClient, target *url.URL, params []utils.P
 		}
 
 		results = append(results, ParamResult{
-			param:  param.ParamKey,
-			result: paramResult,
+			Param:  param.ParamKey,
+			Result: paramResult,
 		})
 	}
 	return results

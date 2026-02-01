@@ -11,7 +11,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-
 type Response struct {
 	Status  int
 	Headers http.Header
